@@ -1,11 +1,28 @@
-import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { routes } from './app.routes';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet, ChildrenOutletContexts } from '@angular/router';
+import { fadeRouteAnimation } from './shared/animations/route-animations';
+import { SidebarComponent } from './shared/presentation/components/sidebar/sidebar.component';
 
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideRouter(routes),
-    provideAnimationsAsync(),
-  ],
-};
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, SidebarComponent],
+  animations: [fadeRouteAnimation],
+  template: `
+    <div class="app-shell">
+      <app-sidebar></app-sidebar>
+      <main>
+        <div [@fadeRouteAnimation]="getRouteAnimationData()">
+          <router-outlet></router-outlet>
+        </div>
+      </main>
+    </div>
+  `,
+})
+export class AppComponent {
+  private contexts = inject(ChildrenOutletContexts);
+
+  getRouteAnimationData() {
+    return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
+  }
+}
