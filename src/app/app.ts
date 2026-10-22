@@ -1,12 +1,28 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterOutlet, ChildrenOutletContexts } from '@angular/router';
+import { fadeRouteAnimation } from './shared/animations/route-animations';
+import { SidebarComponent } from './shared/presentation/components/sidebar/sidebar.component';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.css',
-  templateUrl: './app.html',
+  standalone: true,
+  imports: [RouterOutlet, SidebarComponent],
+  animations: [fadeRouteAnimation],
+  template: `
+    <div class="app-shell">
+      <app-sidebar></app-sidebar>
+      <main>
+        <div [@fadeRouteAnimation]="getRouteAnimationData()">
+          <router-outlet></router-outlet>
+        </div>
+      </main>
+    </div>
+  `,
 })
-export class App {
-  protected readonly title = signal('famicare-app-frontend');
+export class AppComponent {
+  private contexts = inject(ChildrenOutletContexts);
+
+  getRouteAnimationData() {
+    return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
+  }
 }
