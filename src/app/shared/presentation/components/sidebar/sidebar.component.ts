@@ -1,10 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent, IconName } from '../icon/icon.component';
+import { I18nService } from '../../../services/i18n.service';
+import { ThemeService } from '../../../services/theme.service';
+import { LocalDbService } from '../../../../core/infrastructure/local-db.service';
 
 interface NavItem {
-  label: string;
+  key: string;
   route: string;
   icon: IconName;
   badge?: number;
@@ -35,7 +38,7 @@ interface NavItem {
             (click)="closeSidebar.emit()"
           >
             <app-icon [name]="item.icon"></app-icon>
-            <span>{{ item.label }}</span>
+            <span>{{ i18n.t(item.key) }}</span>
             @if (item.badge) {
               <b>{{ item.badge }}</b>
             }
@@ -45,16 +48,44 @@ interface NavItem {
 
       <div class="care-card">
         <span class="online-dot"></span>
-        <strong>Todo funciona bien</strong>
-        <p>Dispositivo conectado</p>
+        <strong>{{ i18n.t('status.operational') }}</strong>
+        <p>{{ i18n.t('status.connected') }}</p>
+      </div>
+
+      <div class="sidebar-controls">
+        <div class="ctrl-row">
+          <span>{{ theme.isDark() ? i18n.t('theme.dark') : i18n.t('theme.light') }}</span>
+          <label class="switch">
+            <input type="checkbox" [checked]="theme.isDark()" (change)="theme.toggleTheme()" />
+            <i></i>
+          </label>
+        </div>
+        <div class="ctrl-row">
+          <span>{{ i18n.t('lang.label') }}</span>
+          <div class="lang-btn-group">
+            <button [class.active]="i18n.currentLang() === 'es'" (click)="i18n.setLanguage('es')">
+              ES
+            </button>
+            <button [class.active]="i18n.currentLang() === 'en'" (click)="i18n.setLanguage('en')">
+              EN
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="aside-profile">
-        <div class="avatar">VR</div>
-        <div><strong>Valeria Ríos</strong><span>Plan Premium</span></div>
+        <div class="avatar">
+          {{ db.currentUser()?.firstName?.slice(0, 1)
+          }}{{ db.currentUser()?.lastName?.slice(0, 1) }}
+        </div>
+        <div>
+          <strong>{{ db.currentUser()?.firstName }} {{ db.currentUser()?.lastName }}</strong>
+          <span>Plan {{ db.currentUser()?.subscription?.planType }}</span>
+        </div>
         <app-icon name="arrow" [size]="16"></app-icon>
       </div>
     </aside>
+
     @if (isOpen) {
       <div class="menu-overlay" (click)="closeSidebar.emit()"></div>
     }
@@ -64,15 +95,19 @@ export class SidebarComponent {
   @Input() isOpen = false;
   @Output() closeSidebar = new EventEmitter<void>();
 
+  i18n = inject(I18nService);
+  theme = inject(ThemeService);
+  db = inject(LocalDbService);
+
   navItems: NavItem[] = [
-    { label: 'Inicio', route: '/', icon: 'home' },
-    { label: 'Ubicación', route: '/monitoring/location', icon: 'pin' },
-    { label: 'Zonas seguras', route: '/monitoring/safe-zones', icon: 'shield' },
-    { label: 'Alertas', route: '/alerts', icon: 'bell', badge: 2 },
-    { label: 'Red de cuidado', route: '/care-network', icon: 'users' },
-    { label: 'Actividad y salud', route: '/activity', icon: 'pulse' },
-    { label: 'Dispositivos', route: '/devices', icon: 'watch' },
-    { label: 'Cuenta y suscripción', route: '/account', icon: 'user' },
-    { label: 'Ayuda', route: '/help', icon: 'help' },
+    { key: 'nav.home', route: '/', icon: 'home' },
+    { key: 'nav.location', route: '/monitoring/location', icon: 'pin' },
+    { key: 'nav.zones', route: '/monitoring/safe-zones', icon: 'shield' },
+    { key: 'nav.alerts', route: '/alerts', icon: 'bell', badge: 2 },
+    { key: 'nav.network', route: '/care-network', icon: 'users' },
+    { key: 'nav.activity', route: '/activity', icon: 'pulse' },
+    { key: 'nav.devices', route: '/devices', icon: 'watch' },
+    { key: 'nav.account', route: '/account', icon: 'user' },
+    { key: 'nav.help', route: '/help', icon: 'help' },
   ];
 }
