@@ -2,12 +2,12 @@ import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
-import { MapVisualComponent } from '../../../../shared/presentation/components/map-visual/map-visual.component';
+import { LeafletMapComponent } from '../../components/leaflet-map/leaflet-map.component';
 
 @Component({
   selector: 'app-dashboard-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconComponent, MapVisualComponent],
+  imports: [CommonModule, RouterLink, IconComponent, LeafletMapComponent],
   template: `
     <div class="content">
       <div class="page-heading">
@@ -44,7 +44,9 @@ import { MapVisualComponent } from '../../../../shared/presentation/components/m
               Ver mapa <app-icon name="arrow" [size]="16"></app-icon>
             </button>
           </div>
-          <app-map-visual></app-map-visual>
+
+          <app-leaflet-map></app-leaflet-map>
+
           <div class="place-row">
             <div class="place-icon"><app-icon name="home"></app-icon></div>
             <div><strong>Casa de Elena</strong><span>Calle Santiago 42, Madrid</span></div>
@@ -128,7 +130,7 @@ import { MapVisualComponent } from '../../../../shared/presentation/components/m
   `,
 })
 export class DashboardViewComponent implements OnInit, OnDestroy {
-  currentTime = signal<string>('');
+  currentTime = signal<string>('10:42 AM');
   private intervalTimer: any;
 
   ngOnInit(): void {
@@ -139,9 +141,7 @@ export class DashboardViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.intervalTimer) {
-      clearInterval(this.intervalTimer);
-    }
+    if (this.intervalTimer) clearInterval(this.intervalTimer);
   }
 
   private updateClock(): void {
