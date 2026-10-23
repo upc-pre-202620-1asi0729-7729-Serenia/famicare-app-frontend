@@ -35,7 +35,7 @@ import { MonitoringStore } from '../../../application/monitoring.store';
             <div>
               <small>UBICACIÓN ACTUAL</small>
               <strong>Elena Martínez</strong>
-              <span>Calle Santiago 42 · Precisión 8 m</span>
+              <span>Av. José Pardo 500 · Precisión 8 m</span>
             </div>
             <span class="status-pill safe">En zona segura</span>
           </div>

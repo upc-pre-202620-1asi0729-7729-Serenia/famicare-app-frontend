@@ -55,13 +55,13 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (typeof L === 'undefined') return;
 
-    const lat = 40.4168;
-    const lng = -3.7038;
+    const lat = -12.118995;
+    const lng = -77.033523;
 
     this.map = L.map(this.mapContainer.nativeElement, {
       zoomControl: false,
       attributionControl: false,
-    }).setView([lat, lng], 15);
+    }).setView([lat, lng], 16);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,

@@ -49,7 +49,7 @@ import { LeafletMapComponent } from '../../components/leaflet-map/leaflet-map.co
 
           <div class="place-row">
             <div class="place-icon"><app-icon name="home"></app-icon></div>
-            <div><strong>Casa de Elena</strong><span>Calle Santiago 42, Madrid</span></div>
+            <div><strong>Casa de Elena</strong><span>Av. José Pardo 500, Miraflores</span></div>
             <span class="status-pill safe">Zona segura</span>
           </div>
         </section>

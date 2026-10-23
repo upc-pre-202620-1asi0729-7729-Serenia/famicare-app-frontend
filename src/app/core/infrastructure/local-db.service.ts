@@ -104,20 +104,20 @@ export class LocalDbService {
         {
           id: '1',
           name: 'Casa de Elena',
-          address: 'Calle Santiago 42',
+          address: 'Av. José Pardo 500, Miraflores',
           radiusMeters: 300,
           isActive: true,
-          lat: 40.4168,
-          lng: -3.7038,
+          lat: -12.118995,
+          lng: -77.033523,
         },
         {
           id: '2',
           name: 'Parque Kennedy',
-          address: 'Bajada Balta',
+          address: 'Diagonal / Malecón Balta',
           radiusMeters: 180,
           isActive: true,
-          lat: 40.4188,
-          lng: -3.7018,
+          lat: -12.1215,
+          lng: -77.0295,
         },
       ];
 
@@ -195,8 +195,8 @@ export class LocalDbService {
       address,
       radiusMeters,
       isActive: true,
-      lat: 40.4168 + (Math.random() - 0.5) * 0.005,
-      lng: -3.7038 + (Math.random() - 0.5) * 0.005,
+      lat: -12.118995 + (Math.random() - 0.5) * 0.005,
+      lng: -77.033523 + (Math.random() - 0.5) * 0.005,
     };
     db.safeZones = [...(db.safeZones || []), newZone];
     this.saveDb(db);
