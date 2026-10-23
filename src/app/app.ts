@@ -33,7 +33,7 @@ import { fadeRouteAnimation } from './shared/animations/route-animations';
     </div>
   `,
 })
-export class AppComponent {
+export class App {
   private contexts = inject(ChildrenOutletContexts);
   isMobileMenuOpen = signal(false);
 
