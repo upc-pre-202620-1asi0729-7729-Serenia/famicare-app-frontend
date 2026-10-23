@@ -1,13 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { MapVisualComponent } from '../../../../shared/presentation/components/map-visual/map-visual.component';
 import { MonitoringStore } from '../../../application/monitoring.store';
 
 @Component({
   selector: 'app-location-view',
   standalone: true,
-  imports: [CommonModule, IconComponent, MapVisualComponent],
+  imports: [CommonModule, MapVisualComponent],
   template: `
     <div class="content">
       <div class="page-heading inner">

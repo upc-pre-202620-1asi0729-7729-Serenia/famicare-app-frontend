@@ -1,13 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { InviteCaregiverModalComponent } from '../../components/invite-caregiver-modal/invite-caregiver-modal.component';
 import { CareNetworkStore } from '../../../application/care-network.store';
 
 @Component({
   selector: 'app-care-network-view',
   standalone: true,
-  imports: [CommonModule, IconComponent, InviteCaregiverModalComponent],
+  imports: [CommonModule, InviteCaregiverModalComponent],
   template: `
     <div class="content">
       <div class="page-heading inner">
