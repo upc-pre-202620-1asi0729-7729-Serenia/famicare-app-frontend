@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
@@ -28,7 +28,7 @@ import { MapVisualComponent } from '../../../../shared/presentation/components/m
         </div>
         <div class="safe-time">
           <small>ÚLTIMA ACTUALIZACIÓN</small>
-          <strong>10:42 AM</strong>
+          <strong>{{ currentTime() }}</strong>
           <span>Hace 2 min</span>
         </div>
       </section>
@@ -127,4 +127,31 @@ import { MapVisualComponent } from '../../../../shared/presentation/components/m
     </div>
   `,
 })
-export class DashboardViewComponent {}
+export class DashboardViewComponent implements OnInit, OnDestroy {
+  currentTime = signal<string>('');
+  private intervalTimer: any;
+
+  ngOnInit(): void {
+    this.updateClock();
+    this.intervalTimer = setInterval(() => {
+      this.updateClock();
+    }, 120000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalTimer) {
+      clearInterval(this.intervalTimer);
+    }
+  }
+
+  private updateClock(): void {
+    const now = new Date();
+    this.currentTime.set(
+      now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }),
+    );
+  }
+}
