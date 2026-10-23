@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MapVisualComponent } from '../../../../shared/presentation/components/map-visual/map-visual.component';
 import { MonitoringStore } from '../../../application/monitoring.store';
@@ -17,7 +17,7 @@ import { MonitoringStore } from '../../../application/monitoring.store';
             {{
               isHistory()
                 ? 'Revisa los lugares y trayectos realizados'
-                : 'Última señal recibida hace 2 minutos'
+                : 'Última señal recibida hace 2 minutos (' + currentTime() + ')'
             }}
           </p>
         </div>
@@ -66,9 +66,35 @@ import { MonitoringStore } from '../../../application/monitoring.store';
     </div>
   `,
 })
-export class LocationViewComponent {
+export class LocationViewComponent implements OnInit, OnDestroy {
   store = inject(MonitoringStore);
   isHistory = signal(false);
+  currentTime = signal<string>('10:42 AM');
+  private intervalTimer: any;
+
+  ngOnInit(): void {
+    this.updateClock();
+    this.intervalTimer = setInterval(() => {
+      this.updateClock();
+    }, 120000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.intervalTimer) {
+      clearInterval(this.intervalTimer);
+    }
+  }
+
+  private updateClock(): void {
+    const now = new Date();
+    this.currentTime.set(
+      now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }),
+    );
+  }
 
   toggleHistory(): void {
     this.isHistory.update((v) => !v);
