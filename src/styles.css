@@ -222,7 +222,7 @@ header { height: 76px; border-bottom: 1px solid var(--line); background: rgba(25
 
 .full-map-card { position: relative; }
 .full-map-card > .map, .full-map-card > .map-box { height: 590px; }
-.floating-person { position: absolute; left: 22px; bottom: 22px; background: white; border-radius: 13px; padding: 14px; box-shadow: 0 7px 25px rgba(15,41,30,.16); display: flex; align-items: center; gap: 11px; min-width: 360px; z-index: 5; }
+.floating-person { position: absolute; left: 22px; bottom: 22px; background: white; border-radius: 13px; padding: 14px; box-shadow: 0 7px 25px rgba(15,41,30,.16); display: flex; align-items: center; gap: 11px; min-width: 360px; z-index: 800; }
 .floating-person small, .floating-person strong, .floating-person span { display: block; }
 .floating-person small { font-size: 8px; color: var(--muted); }
 .floating-person strong { margin: 3px 0; font-size: 12px; }
