@@ -112,8 +112,8 @@ export class LocalDbService {
         },
         {
           id: '2',
-          name: 'Parque Castilla',
-          address: 'Paseo de la Castellana',
+          name: 'Parque Kennedy',
+          address: 'Bajada Balta',
           radiusMeters: 180,
           isActive: true,
           lat: 40.4188,
@@ -145,11 +145,41 @@ export class LocalDbService {
       (u: UserAccount) => u.email.toLowerCase() === email.toLowerCase() && u.password === pass,
     );
     if (!user) return false;
+
     this.checkSubscriptionExpiry(user);
     this.currentUser.set(user);
     localStorage.setItem(this.SESSION_KEY, user.id);
     this.loadZones();
     return true;
+  }
+
+  register(newUser: Omit<UserAccount, 'id' | 'subscription' | 'linkedDeviceIds'>): boolean {
+    const db = this.getDb();
+    if (db.users.some((u: UserAccount) => u.email.toLowerCase() === newUser.email.toLowerCase())) {
+      return false;
+    }
+
+    const createdUser: UserAccount = {
+      ...newUser,
+      id: 'usr_' + Date.now(),
+      subscription: {
+        planType: 'Free',
+        priceMonthly: 0,
+        currency: 'PEN',
+        renewalDate: '',
+        isCancelled: false,
+      },
+      linkedDeviceIds: [],
+    };
+
+    db.users.push(createdUser);
+    this.saveDb(db);
+    return true;
+  }
+
+  logout(): void {
+    this.currentUser.set(null);
+    localStorage.removeItem(this.SESSION_KEY);
   }
 
   loadZones(): void {
