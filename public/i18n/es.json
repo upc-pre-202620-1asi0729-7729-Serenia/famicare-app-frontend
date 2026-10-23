@@ -1,0 +1,19 @@
+{
+  "nav.home": "Inicio",
+  "nav.location": "Ubicación",
+  "nav.zones": "Zonas seguras",
+  "nav.alerts": "Alertas",
+  "nav.network": "Red de cuidado",
+  "nav.activity": "Actividad y salud",
+  "nav.devices": "Dispositivos",
+  "nav.account": "Cuenta y suscripción",
+  "nav.help": "Ayuda",
+  "theme.dark": "Modo oscuro",
+  "theme.light": "Modo claro",
+  "lang.label": "Idioma",
+  "status.operational": "Todo funciona bien",
+  "status.connected": "Dispositivo conectado",
+  "empty.no_elderly_title": "Sin persona mayor asignada",
+  "empty.no_elderly_desc": "Debes asignar una persona mayor antes de utilizar las funciones de monitoreo.",
+  "btn.assign_elderly": "Asignar persona mayor"
+}

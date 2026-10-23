@@ -1,0 +1,19 @@
+{
+  "nav.home": "Home",
+  "nav.location": "Location",
+  "nav.zones": "Safe zones",
+  "nav.alerts": "Alerts",
+  "nav.network": "Care network",
+  "nav.activity": "Activity & health",
+  "nav.devices": "Devices",
+  "nav.account": "Account & subscription",
+  "nav.help": "Help & Support",
+  "theme.dark": "Dark mode",
+  "theme.light": "Light mode",
+  "lang.label": "Language",
+  "status.operational": "All systems normal",
+  "status.connected": "Device connected",
+  "empty.no_elderly_title": "No elderly person assigned",
+  "empty.no_elderly_desc": "You must assign an elderly person before using monitoring features.",
+  "btn.assign_elderly": "Assign elderly person"
+}
