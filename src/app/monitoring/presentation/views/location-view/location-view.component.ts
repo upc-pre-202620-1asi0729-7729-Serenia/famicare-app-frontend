@@ -1,12 +1,12 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MapVisualComponent } from '../../../../shared/presentation/components/map-visual/map-visual.component';
+import { LeafletMapComponent } from '../../components/leaflet-map/leaflet-map.component';
 import { MonitoringStore } from '../../../application/monitoring.store';
 
 @Component({
   selector: 'app-location-view',
   standalone: true,
-  imports: [CommonModule, MapVisualComponent],
+  imports: [CommonModule, LeafletMapComponent],
   template: `
     <div class="content">
       <div class="page-heading inner">
@@ -28,7 +28,8 @@ import { MonitoringStore } from '../../../application/monitoring.store';
 
       @if (!isHistory()) {
         <div class="full-map-card">
-          <app-map-visual [large]="true"></app-map-visual>
+          <app-leaflet-map [large]="true"></app-leaflet-map>
+
           <div class="floating-person">
             <div class="avatar elder">EM</div>
             <div>
@@ -60,7 +61,8 @@ import { MonitoringStore } from '../../../application/monitoring.store';
               </div>
             }
           </section>
-          <app-map-visual [large]="true"></app-map-visual>
+
+          <app-leaflet-map [large]="true"></app-leaflet-map>
         </div>
       }
     </div>
@@ -80,9 +82,7 @@ export class LocationViewComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.intervalTimer) {
-      clearInterval(this.intervalTimer);
-    }
+    if (this.intervalTimer) clearInterval(this.intervalTimer);
   }
 
   private updateClock(): void {
