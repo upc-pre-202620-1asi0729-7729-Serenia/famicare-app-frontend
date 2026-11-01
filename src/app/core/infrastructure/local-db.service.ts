@@ -11,7 +11,7 @@ export interface CardData {
 export interface UserSubscription {
   planType: 'Free' | 'Familiar Plus' | 'Familiar Premium';
   priceMonthly: number;
-  currency: 'PEN' | 'EUR';
+  currency: 'PEN' | 'USD';
   renewalDate: string;
   isCancelled: boolean;
   cancelEffectiveDate?: string;
@@ -23,11 +23,10 @@ export interface UserAccount {
   firstName: string;
   lastName: string;
   email: string;
-  password: string;
   birthDate: string;
   country: string;
   phone: string;
-  elderlyId?: string;
+  elderlyId: string;
   subscription: UserSubscription;
   linkedDeviceIds: string[];
 }
@@ -45,7 +44,6 @@ export interface SafeZoneEntity {
 @Injectable({ providedIn: 'root' })
 export class LocalDbService {
   private readonly STORAGE_KEY = 'famicare_db_v1';
-  private readonly SESSION_KEY = 'famicare_current_user_id';
 
   readonly VALID_NUMERIC_CODES = [
     '204800',
@@ -65,7 +63,8 @@ export class LocalDbService {
 
   constructor() {
     this.initDatabase();
-    this.restoreSession();
+    this.loadActiveUser();
+    this.loadZones();
   }
 
   private initDatabase(): void {
@@ -73,15 +72,14 @@ export class LocalDbService {
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-      const adminUser: UserAccount = {
+      const defaultUser: UserAccount = {
         id: 'usr_admin_1',
-        firstName: 'Serenia',
-        lastName: 'Admin',
-        email: 'admin@serenia.com',
-        password: 'admintest',
+        firstName: 'Valeria',
+        lastName: 'Ríos',
+        email: 'valeria.rios@email.com',
         birthDate: '1988-06-14',
         country: 'Perú',
-        phone: '+51 935 598 887',
+        phone: '+51 987 654 321',
         elderlyId: 'eld_admin_1',
         subscription: {
           planType: 'Familiar Premium',
@@ -90,8 +88,8 @@ export class LocalDbService {
           renewalDate: nextMonth.toISOString(),
           isCancelled: false,
           savedCard: {
-            holderName: 'Juan Estupiñan',
-            billingAddress: 'Calle Santiago 42',
+            holderName: 'Valeria Ríos',
+            billingAddress: 'Av. José Pardo 500, Miraflores',
             cardNumber: '4111111111114321',
             expDate: '08/28',
             cvv: '123',
@@ -124,7 +122,7 @@ export class LocalDbService {
       localStorage.setItem(
         this.STORAGE_KEY,
         JSON.stringify({
-          users: [adminUser],
+          user: defaultUser,
           safeZones: defaultZones,
         }),
       );
@@ -132,54 +130,19 @@ export class LocalDbService {
   }
 
   private getDb() {
-    return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{"users":[],"safeZones":[]}');
+    return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}');
   }
 
   private saveDb(db: any) {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(db));
   }
 
-  login(email: string, pass: string): boolean {
+  private loadActiveUser(): void {
     const db = this.getDb();
-    const user = db.users.find(
-      (u: UserAccount) => u.email.toLowerCase() === email.toLowerCase() && u.password === pass,
-    );
-    if (!user) return false;
-
-    this.checkSubscriptionExpiry(user);
-    this.currentUser.set(user);
-    localStorage.setItem(this.SESSION_KEY, user.id);
-    this.loadZones();
-    return true;
-  }
-
-  register(newUser: Omit<UserAccount, 'id' | 'subscription' | 'linkedDeviceIds'>): boolean {
-    const db = this.getDb();
-    if (db.users.some((u: UserAccount) => u.email.toLowerCase() === newUser.email.toLowerCase())) {
-      return false;
+    if (db.user) {
+      this.checkSubscriptionExpiry(db.user);
+      this.currentUser.set(db.user);
     }
-
-    const createdUser: UserAccount = {
-      ...newUser,
-      id: 'usr_' + Date.now(),
-      subscription: {
-        planType: 'Free',
-        priceMonthly: 0,
-        currency: 'PEN',
-        renewalDate: '',
-        isCancelled: false,
-      },
-      linkedDeviceIds: [],
-    };
-
-    db.users.push(createdUser);
-    this.saveDb(db);
-    return true;
-  }
-
-  logout(): void {
-    this.currentUser.set(null);
-    localStorage.removeItem(this.SESSION_KEY);
   }
 
   loadZones(): void {
@@ -217,7 +180,7 @@ export class LocalDbService {
     if (!user || user.linkedDeviceIds.includes(code)) return false;
     user.linkedDeviceIds.push(code);
     const db = this.getDb();
-    db.users = db.users.map((u: UserAccount) => (u.id === user.id ? user : u));
+    db.user = user;
     this.saveDb(db);
     this.currentUser.set({ ...user });
     return true;
@@ -228,7 +191,7 @@ export class LocalDbService {
     if (!user) return;
     const db = this.getDb();
     user.subscription = newSub;
-    db.users = db.users.map((u: UserAccount) => (u.id === user.id ? user : u));
+    db.user = user;
     this.saveDb(db);
     this.currentUser.set({ ...user });
   }
@@ -245,20 +208,9 @@ export class LocalDbService {
           isCancelled: false,
         };
         const db = this.getDb();
-        db.users = db.users.map((u: UserAccount) => (u.id === user.id ? user : u));
+        db.user = user;
         this.saveDb(db);
       }
     }
-  }
-
-  private restoreSession(): void {
-    const uid = localStorage.getItem(this.SESSION_KEY);
-    const db = this.getDb();
-    const user = db.users.find((u: UserAccount) => u.id === uid) || db.users[0];
-    if (user) {
-      this.checkSubscriptionExpiry(user);
-      this.currentUser.set(user);
-    }
-    this.loadZones();
   }
 }
