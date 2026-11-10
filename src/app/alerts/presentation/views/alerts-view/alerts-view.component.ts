@@ -37,7 +37,16 @@ import { AlertsStore } from '../../../application/alerts.store';
               <span>{{ alert.description }}</span>
               <small>{{ alert.timestamp }}</small>
             </div>
-            <span [class]="'status-pill ' + (alert.status === 'Pendiente' ? 'danger' : 'safe')">
+            <span
+              [class]="
+                'status-pill ' +
+                (alert.status === 'Pendiente'
+                  ? 'danger'
+                  : alert.status === 'Resuelta'
+                    ? 'safe'
+                    : 'warning')
+              "
+            >
               {{ alert.status }}
             </span>
             <button class="text-btn" (click)="store.selectedAlert.set(alert)">
