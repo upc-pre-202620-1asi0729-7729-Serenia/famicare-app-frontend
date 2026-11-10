@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LeafletMapComponent } from '../../components/leaflet-map/leaflet-map.component';
 import { MonitoringStore } from '../../../application/monitoring.store';
+import { I18nService } from '../../../../shared/services/i18n.service';
 
 @Component({
   selector: 'app-location-view',
@@ -11,18 +12,20 @@ import { MonitoringStore } from '../../../application/monitoring.store';
     <div class="content">
       <div class="page-heading inner">
         <div>
-          <p class="eyebrow">Monitoreo en vivo</p>
-          <h1>{{ isHistory() ? 'Historial de recorrido' : 'Ubicación en tiempo real' }}</h1>
+          <p class="eyebrow">{{ i18n.t('location.eyebrow') }}</p>
+          <h1>
+            {{ isHistory() ? i18n.t('location.historyTitle') : i18n.t('location.realtimeTitle') }}
+          </h1>
           <p>
             {{
               isHistory()
-                ? 'Revisa los lugares y trayectos realizados'
-                : 'Última señal recibida hace 2 minutos (' + currentTime() + ')'
+                ? i18n.t('location.historySubtitle')
+                : i18n.t('location.realtimeSubtitle') + ' (' + currentTime() + ')'
             }}
           </p>
         </div>
         <button class="primary-btn" (click)="toggleHistory()">
-          {{ isHistory() ? 'Volver al mapa' : 'Ver historial' }}
+          {{ isHistory() ? i18n.t('location.btnReturn') : i18n.t('location.btnHistory') }}
         </button>
       </div>
 
@@ -33,23 +36,31 @@ import { MonitoringStore } from '../../../application/monitoring.store';
           <div class="floating-person">
             <div class="avatar elder">EM</div>
             <div>
-              <small>UBICACIÓN ACTUAL</small>
+              <small>{{ i18n.t('location.currentTag') }}</small>
               <strong>Elena Martínez</strong>
-              <span>Av. José Pardo 500 · Precisión 8 m</span>
+              <span>Av. José Pardo 500 · {{ i18n.t('location.precision') }} 8 m</span>
             </div>
-            <span class="status-pill safe">En zona segura</span>
+            <span class="status-pill safe">{{ i18n.t('location.inSafeZone') }}</span>
           </div>
         </div>
       } @else {
         <div class="split-layout">
           <section class="card route-panel">
-            <div class="date-selector">‹ <strong>Martes, 24 sep · 09:00—10:00</strong> ›</div>
-            <div class="route-stats">
-              <div><strong>4,2 km</strong><span>Distancia</span></div>
-              <div><strong>58 min</strong><span>Duración</span></div>
-              <div><strong>3</strong><span>Paradas</span></div>
+            <div class="date-selector">
+              ‹ <strong>{{ i18n.t('location.historyDateRange') }}</strong> ›
             </div>
-            <h3>Recorrido</h3>
+            <div class="route-stats">
+              <div>
+                <strong>4,2 km</strong><span>{{ i18n.t('location.distance') }}</span>
+              </div>
+              <div>
+                <strong>58 min</strong><span>{{ i18n.t('location.duration') }}</span>
+              </div>
+              <div>
+                <strong>3</strong><span>{{ i18n.t('location.stops') }}</span>
+              </div>
+            </div>
+            <h3>{{ i18n.t('location.routeHeading') }}</h3>
             @for (point of store.routePoints(); track point.time; let idx = $index) {
               <div class="timeline">
                 <b>{{ idx + 1 }}</b>
@@ -69,7 +80,9 @@ import { MonitoringStore } from '../../../application/monitoring.store';
   `,
 })
 export class LocationViewComponent implements OnInit, OnDestroy {
+  i18n = inject(I18nService);
   store = inject(MonitoringStore);
+
   isHistory = signal(false);
   currentTime = signal<string>('10:42 AM');
   private intervalTimer: any;
@@ -78,7 +91,7 @@ export class LocationViewComponent implements OnInit, OnDestroy {
     this.updateClock();
     this.intervalTimer = setInterval(() => {
       this.updateClock();
-    }, 120000);
+    }, 60000);
   }
 
   ngOnDestroy(): void {
@@ -87,8 +100,9 @@ export class LocationViewComponent implements OnInit, OnDestroy {
 
   private updateClock(): void {
     const now = new Date();
+    const locale = this.i18n.currentLang() === 'en' ? 'en-US' : 'es-PE';
     this.currentTime.set(
-      now.toLocaleTimeString('en-US', {
+      now.toLocaleTimeString(locale, {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
