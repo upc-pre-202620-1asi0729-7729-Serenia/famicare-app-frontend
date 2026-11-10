@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LocalDbService } from '../../../../core/infrastructure/local-db.service';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { LinkDeviceModalComponent } from '../../components/link-device-modal/link-device-modal.component';
 
@@ -15,54 +16,75 @@ import { LinkDeviceModalComponent } from '../../components/link-device-modal/lin
           <h1>Dispositivos vinculados</h1>
           <p>Gestiona la pulsera y sus sensores</p>
         </div>
-        <button class="primary-btn" (click)="isModalOpen.set(true)">Vincular dispositivo</button>
+        <button class="primary-btn" (click)="isModalOpen.set(true)">
+          {{ device() ? 'Cambiar dispositivo' : 'Vincular dispositivo' }}
+        </button>
       </div>
 
-      <div class="two-col">
-        <section class="card device-card">
-          <div class="watch-visual">
-            <app-icon name="watch" [size]="54"></app-icon>
-          </div>
-          <span class="status-pill safe">CONECTADA</span>
-          <h2>Pulsera FC-2048</h2>
-          <p>Última sincronización hace 2 minutos</p>
-          <div class="device-stats">
-            <div><app-icon name="battery"></app-icon><strong>78%</strong><span>Batería</span></div>
-            <div><app-icon name="pin"></app-icon><strong>Alta</strong><span>Señal GPS</span></div>
-          </div>
-          <button class="wide-secondary" (click)="isModalOpen.set(true)">
-            Ver todos los detalles
-          </button>
-        </section>
+      @if (device(); as dev) {
+        <div class="two-col">
+          <section class="card device-card">
+            <div class="watch-visual">
+              <app-icon name="watch" [size]="54"></app-icon>
+            </div>
+            <span class="status-pill safe">{{ dev.status }}</span>
+            <h2>{{ dev.modelName }}</h2>
+            <p>Código: {{ dev.deviceCode }} · {{ dev.lastSync }}</p>
+            <div class="device-stats">
+              <div>
+                <app-icon name="battery"></app-icon>
+                <strong>{{ dev.battery }}%</strong>
+                <span>Batería</span>
+              </div>
+              <div>
+                <app-icon name="pin"></app-icon>
+                <strong>{{ dev.gpsSignal }}</strong>
+                <span>Señal GPS</span>
+              </div>
+            </div>
+            <button class="wide-secondary" (click)="isModalOpen.set(true)">
+              Reconectar o cambiar pulsera
+            </button>
+          </section>
 
-        <section class="card">
-          <h3>Consumo de batería · 48 h</h3>
-          <div class="battery-chart">
-            <svg viewBox="0 0 500 180">
-              <path
-                d="M0 18 C80 26 80 45 150 58 S250 82 300 100 S420 126 500 158"
-                fill="none"
-                stroke="#e86343"
-                stroke-width="4"
-              />
-              <path
-                d="M0 18 C80 26 80 45 150 58 S250 82 300 100 S420 126 500 158 V180 H0Z"
-                fill="url(#g)"
-              />
-              <defs>
-                <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-                  <stop stop-color="#e86343" stop-opacity=".18" />
-                  <stop offset="1" stop-color="#e86343" stop-opacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          <div class="setting-row">
-            <span>Intervalo de ubicación</span><strong>Cada 2 minutos</strong>
-          </div>
-          <div class="setting-row"><span>Sensibilidad de caída</span><strong>Alta</strong></div>
-        </section>
-      </div>
+          <section class="card">
+            <h3>Consumo de batería · 48 h</h3>
+            <div class="battery-chart">
+              <svg viewBox="0 0 500 180">
+                <path
+                  d="M0 18 C80 26 80 45 150 58 S250 82 300 100 S420 126 500 158"
+                  fill="none"
+                  stroke="#e86343"
+                  stroke-width="4"
+                />
+                <path
+                  d="M0 18 C80 26 80 45 150 58 S250 82 300 100 S420 126 500 158 V180 H0Z"
+                  fill="url(#g)"
+                />
+                <defs>
+                  <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                    <stop stop-color="#e86343" stop-opacity=".18" />
+                    <stop offset="1" stop-color="#e86343" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div class="setting-row">
+              <span>Intervalo de ubicación</span>
+              <strong>Cada {{ dev.reportIntervalMinutes }} minutos</strong>
+            </div>
+            <div class="setting-row">
+              <span>Sensibilidad de caída</span>
+              <strong>{{ dev.fallSensitivity }}</strong>
+            </div>
+          </section>
+        </div>
+      } @else {
+        <div class="card empty-state">
+          <p>No hay ninguna pulsera vinculada actualmente.</p>
+          <button class="primary-btn" (click)="isModalOpen.set(true)">Vincular ahora</button>
+        </div>
+      }
     </div>
 
     @if (isModalOpen()) {
@@ -71,5 +93,7 @@ import { LinkDeviceModalComponent } from '../../components/link-device-modal/lin
   `,
 })
 export class DevicesViewComponent {
+  private db = inject(LocalDbService);
+  readonly device = this.db.currentDevice;
   isModalOpen = signal(false);
 }

@@ -34,15 +34,15 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
               type="text"
               [(ngModel)]="relationship"
               name="relationship"
-              placeholder="Ej. Familiar"
+              placeholder="Ej. Hermano, Enfermero"
               required
             />
           </label>
           <label>
             Nivel de permisos
             <select [(ngModel)]="role" name="role">
-              <option>Colaborador · Alertas y lectura</option>
-              <option>Administrador · Control total</option>
+              <option value="Alertas y lectura">Colaborador · Alertas y lectura</option>
+              <option value="Control total">Administrador · Control total</option>
             </select>
           </label>
           <button type="submit" class="primary-btn">Enviar invitación</button>
@@ -53,15 +53,19 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
 })
 export class InviteCaregiverModalComponent {
   @Output() close = new EventEmitter<void>();
-  @Output() invited = new EventEmitter<{ email: string; relationship: string }>();
+  @Output() invited = new EventEmitter<{ email: string; relationship: string; role: string }>();
 
   email = '';
   relationship = '';
-  role = 'Colaborador · Alertas y lectura';
+  role = 'Alertas y lectura';
 
   send(): void {
-    if (this.email.trim()) {
-      this.invited.emit({ email: this.email, relationship: this.relationship });
+    if (this.email.trim() && this.relationship.trim()) {
+      this.invited.emit({
+        email: this.email,
+        relationship: this.relationship,
+        role: this.role,
+      });
     }
   }
 }
