@@ -15,7 +15,7 @@ export class I18nService {
 
   async setLanguage(lang: SupportedLang): Promise<void> {
     try {
-      const response = await fetch(`/i18n/${lang}.json`);
+      const response = await fetch(`./i18n/${lang}.json`);
       const data = await response.json();
       this.translations.set(data);
       this.currentLang.set(lang);
