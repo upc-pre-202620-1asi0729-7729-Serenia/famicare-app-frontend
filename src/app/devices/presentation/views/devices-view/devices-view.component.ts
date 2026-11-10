@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { LocalDbService } from '../../../../core/infrastructure/local-db.service';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { LinkDeviceModalComponent } from '../../components/link-device-modal/link-device-modal.component';
+import { I18nService } from '../../../../shared/services/i18n.service';
 
 @Component({
   selector: 'app-devices-view',
@@ -12,12 +13,12 @@ import { LinkDeviceModalComponent } from '../../components/link-device-modal/lin
     <div class="content">
       <div class="page-heading inner">
         <div>
-          <p class="eyebrow">Dispositivos IoT</p>
-          <h1>Dispositivos vinculados</h1>
-          <p>Gestiona la pulsera y sus sensores</p>
+          <p class="eyebrow">{{ i18n.t('devices.eyebrow') }}</p>
+          <h1>{{ i18n.t('devices.title') }}</h1>
+          <p>{{ i18n.t('devices.subtitle') }}</p>
         </div>
         <button class="primary-btn" (click)="isModalOpen.set(true)">
-          {{ device() ? 'Cambiar dispositivo' : 'Vincular dispositivo' }}
+          {{ device() ? i18n.t('devices.changeBtn') : i18n.t('devices.linkBtn') }}
         </button>
       </div>
 
@@ -25,30 +26,30 @@ import { LinkDeviceModalComponent } from '../../components/link-device-modal/lin
         <div class="two-col">
           <section class="card device-card">
             <div class="watch-visual">
-              <app-icon name="watch" [size]="54"></app-icon>
+              <app-icon [name]="'watch'" [size]="54"></app-icon>
             </div>
             <span class="status-pill safe">{{ dev.status }}</span>
             <h2>{{ dev.modelName }}</h2>
-            <p>Código: {{ dev.deviceCode }} · {{ dev.lastSync }}</p>
+            <p>ID: {{ dev.deviceCode }} · {{ dev.lastSync }}</p>
             <div class="device-stats">
               <div>
-                <app-icon name="battery"></app-icon>
+                <app-icon [name]="'battery'"></app-icon>
                 <strong>{{ dev.battery }}%</strong>
-                <span>Batería</span>
+                <span>{{ i18n.t('devices.battery') }}</span>
               </div>
               <div>
-                <app-icon name="pin"></app-icon>
+                <app-icon [name]="'pin'"></app-icon>
                 <strong>{{ dev.gpsSignal }}</strong>
-                <span>Señal GPS</span>
+                <span>{{ i18n.t('devices.gpsSignal') }}</span>
               </div>
             </div>
             <button class="wide-secondary" (click)="isModalOpen.set(true)">
-              Reconectar o cambiar pulsera
+              {{ i18n.t('devices.reconnectBtn') }}
             </button>
           </section>
 
           <section class="card">
-            <h3>Consumo de batería · 48 h</h3>
+            <h3>{{ i18n.t('devices.batteryChart') }}</h3>
             <div class="battery-chart">
               <svg viewBox="0 0 500 180">
                 <path
@@ -70,19 +71,24 @@ import { LinkDeviceModalComponent } from '../../components/link-device-modal/lin
               </svg>
             </div>
             <div class="setting-row">
-              <span>Intervalo de ubicación</span>
-              <strong>Cada {{ dev.reportIntervalMinutes }} minutos</strong>
+              <span>{{ i18n.t('devices.locationInterval') }}</span>
+              <strong
+                >{{ i18n.t('devices.every') }} {{ dev.reportIntervalMinutes }}
+                {{ i18n.t('devices.minutes') }}</strong
+              >
             </div>
             <div class="setting-row">
-              <span>Sensibilidad de caída</span>
+              <span>{{ i18n.t('devices.fallSensitivity') }}</span>
               <strong>{{ dev.fallSensitivity }}</strong>
             </div>
           </section>
         </div>
       } @else {
         <div class="card empty-state">
-          <p>No hay ninguna pulsera vinculada actualmente.</p>
-          <button class="primary-btn" (click)="isModalOpen.set(true)">Vincular ahora</button>
+          <p>{{ i18n.t('devices.empty') }}</p>
+          <button class="primary-btn" (click)="isModalOpen.set(true)">
+            {{ i18n.t('devices.linkBtn') }}
+          </button>
         </div>
       }
     </div>
@@ -93,6 +99,7 @@ import { LinkDeviceModalComponent } from '../../components/link-device-modal/lin
   `,
 })
 export class DevicesViewComponent {
+  i18n = inject(I18nService);
   private db = inject(LocalDbService);
   readonly device = this.db.currentDevice;
   isModalOpen = signal(false);
