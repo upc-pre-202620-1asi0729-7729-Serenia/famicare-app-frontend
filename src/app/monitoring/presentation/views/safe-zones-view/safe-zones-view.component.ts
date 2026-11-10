@@ -51,7 +51,7 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
     @if (isModalOpen()) {
       <div class="modal-backdrop" (mousedown)="isModalOpen.set(false)">
         <div class="modal" (mousedown)="$event.stopPropagation()">
-          <button class="modal-close" (click)="isModalOpen.set(false)">
+          <button class="modal-close" (click)="isModalOpen.set(false)" aria-label="Cerrar modal">
             <app-icon name="close"></app-icon>
           </button>
           <p class="eyebrow">NUEVA GEOCERCA</p>
