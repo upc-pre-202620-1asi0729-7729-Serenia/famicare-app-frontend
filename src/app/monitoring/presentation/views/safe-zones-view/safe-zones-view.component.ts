@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LocalDbService } from '../../../../core/infrastructure/local-db.service';
 import { LeafletMapComponent } from '../../components/leaflet-map/leaflet-map.component';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
+import { I18nService } from '../../../../shared/services/i18n.service';
 
 @Component({
   selector: 'app-safe-zones-view',
@@ -13,18 +14,20 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
     <div class="content">
       <div class="page-heading inner">
         <div>
-          <p class="eyebrow">Geocercas</p>
-          <h1>Zonas seguras</h1>
-          <p>Define espacios de confianza para Elena</p>
+          <p class="eyebrow">{{ i18n.t('zones.eyebrow') }}</p>
+          <h1>{{ i18n.t('zones.title') }}</h1>
+          <p>{{ i18n.t('zones.subtitle') }}</p>
         </div>
-        <button class="primary-btn" (click)="isModalOpen.set(true)">Crear zona segura</button>
+        <button class="primary-btn" (click)="isModalOpen.set(true)">
+          {{ i18n.t('zones.createBtn') }}
+        </button>
       </div>
 
       <div class="split-layout">
         <app-leaflet-map [large]="true"></app-leaflet-map>
 
         <section class="card list-panel">
-          <h3>{{ db.safeZones().length }} zonas configuradas</h3>
+          <h3>{{ db.safeZones().length }} {{ i18n.t('zones.configuredCount') }}</h3>
           @for (zone of db.safeZones(); track zone.id) {
             <div class="zone-item">
               <div class="zone-icon">
@@ -32,7 +35,9 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
               </div>
               <div>
                 <strong>{{ zone.name }}</strong>
-                <span>{{ zone.address }} · Radio {{ zone.radiusMeters }} m</span>
+                <span
+                  >{{ zone.address }} · {{ i18n.t('zones.radius') }} {{ zone.radiusMeters }} m</span
+                >
               </div>
               <label class="switch">
                 <input
@@ -51,36 +56,37 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
     @if (isModalOpen()) {
       <div class="modal-backdrop" (mousedown)="isModalOpen.set(false)">
         <div class="modal" (mousedown)="$event.stopPropagation()">
-          <button class="modal-close" (click)="isModalOpen.set(false)">
-            <app-icon name="close"></app-icon>
+          <button class="modal-close" (click)="isModalOpen.set(false)" aria-label="Cerrar modal">
+            <app-icon [name]="'close'"></app-icon>
           </button>
-          <p class="eyebrow">NUEVA GEOCERCA</p>
-          <h2>Crear zona segura</h2>
-          <p class="modal-sub">Recibe alertas cuando Elena entre o salga</p>
+          <p class="eyebrow">{{ i18n.t('zones.modal.eyebrow') }}</p>
+          <h2>{{ i18n.t('zones.modal.title') }}</h2>
+          <p class="modal-sub">{{ i18n.t('zones.modal.sub') }}</p>
 
           <form class="form" (ngSubmit)="saveZone()">
             <label>
-              Nombre de la zona
+              {{ i18n.t('zones.modal.name') }}
               <input
                 type="text"
                 [(ngModel)]="newZoneName"
                 name="zName"
-                placeholder="Ej. Taller de pintura"
+                [placeholder]="i18n.t('zones.modal.namePlaceholder')"
                 required
               />
             </label>
             <label>
-              Dirección
+              {{ i18n.t('zones.modal.address') }}
               <input
                 type="text"
                 [(ngModel)]="newZoneAddress"
                 name="zAddr"
-                placeholder="Buscar dirección"
+                [placeholder]="i18n.t('zones.modal.addressPlaceholder')"
                 required
               />
             </label>
             <label>
-              Radio de la zona <strong class="radius-indicator">{{ newZoneRadius }} m</strong>
+              {{ i18n.t('zones.modal.radius') }}
+              <strong class="radius-indicator">{{ newZoneRadius }} m</strong>
               <input
                 type="range"
                 [(ngModel)]="newZoneRadius"
@@ -90,7 +96,9 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
                 step="10"
               />
             </label>
-            <button type="submit" class="primary-btn full-btn">Guardar zona segura</button>
+            <button type="submit" class="primary-btn full-btn">
+              {{ i18n.t('zones.modal.saveBtn') }}
+            </button>
           </form>
         </div>
       </div>
@@ -111,6 +119,7 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
   ],
 })
 export class SafeZonesViewComponent {
+  i18n = inject(I18nService);
   db = inject(LocalDbService);
   isModalOpen = signal(false);
 

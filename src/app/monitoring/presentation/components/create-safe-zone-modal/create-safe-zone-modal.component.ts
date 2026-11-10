@@ -1,7 +1,9 @@
+// create-safe-zone-modal.component.ts
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
+import { CreateSafeZoneDto } from '../../../domain/model/safe-zone.entity';
 
 @Component({
   selector: 'app-create-safe-zone-modal',
@@ -50,12 +52,7 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
 })
 export class CreateSafeZoneModalComponent {
   @Output() close = new EventEmitter<void>();
-  @Output() zoneCreated = new EventEmitter<{
-    name: string;
-    address: string;
-    radiusMeters: number;
-    iconType: 'home' | 'pin';
-  }>();
+  @Output() zoneCreated = new EventEmitter<CreateSafeZoneDto>();
 
   name = '';
   address = '';
@@ -63,10 +60,17 @@ export class CreateSafeZoneModalComponent {
 
   save(): void {
     if (this.name.trim() && this.address.trim()) {
+      const baseLat = -12.1192;
+      const baseLng = -77.0315;
+      const offsetLat = (Math.random() - 0.5) * 0.008;
+      const offsetLng = (Math.random() - 0.5) * 0.008;
+
       this.zoneCreated.emit({
         name: this.name,
         address: this.address,
         radiusMeters: this.radius,
+        lat: Number((baseLat + offsetLat).toFixed(6)),
+        lng: Number((baseLng + offsetLng).toFixed(6)),
         iconType: 'pin',
       });
     }

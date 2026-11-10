@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InviteCaregiverModalComponent } from '../../components/invite-caregiver-modal/invite-caregiver-modal.component';
 import { CareNetworkStore } from '../../../application/care-network.store';
+import { I18nService } from '../../../../shared/services/i18n.service';
 
 @Component({
   selector: 'app-care-network-view',
@@ -11,12 +12,12 @@ import { CareNetworkStore } from '../../../application/care-network.store';
     <div class="content">
       <div class="page-heading inner">
         <div>
-          <p class="eyebrow">Equipo familiar</p>
-          <h1>Red de cuidado</h1>
-          <p>{{ store.caregivers().length }} cuidadores activos para Elena</p>
+          <p class="eyebrow">{{ i18n.t('network.eyebrow') }}</p>
+          <h1>{{ i18n.t('network.title') }}</h1>
+          <p>{{ store.caregivers().length }} {{ i18n.t('network.activeCaregivers') }}</p>
         </div>
         <button class="primary-btn" (click)="store.isInviteModalOpen.set(true)">
-          Invitar cuidador
+          {{ i18n.t('network.inviteBtn') }}
         </button>
       </div>
 
@@ -28,9 +29,9 @@ import { CareNetworkStore } from '../../../application/care-network.store';
             <h3>{{ c.name }}</h3>
             <p>{{ c.role }}</p>
             <hr />
-            <small>DISPONIBILIDAD</small>
+            <small>{{ i18n.t('network.availability') }}</small>
             <strong>{{ c.schedule }}</strong>
-            <button class="wide-secondary">Gestionar permisos</button>
+            <button class="wide-secondary">{{ i18n.t('network.managePermissions') }}</button>
           </section>
         }
       </div>
@@ -46,5 +47,6 @@ import { CareNetworkStore } from '../../../application/care-network.store';
   `,
 })
 export class CareNetworkViewComponent {
+  i18n = inject(I18nService);
   store = inject(CareNetworkStore);
 }

@@ -1,50 +1,28 @@
-import { Injectable, signal } from '@angular/core';
-import { SafeZone } from '../domain/model/safe-zone.entity';
+import { Injectable, inject, signal } from '@angular/core';
+import { LocalDbService } from '../../core/infrastructure/local-db.service';
+import { CreateSafeZoneDto } from '../domain/model/safe-zone.entity';
 import { RoutePoint } from '../domain/model/route-point.entity';
 
 @Injectable({ providedIn: 'root' })
 export class MonitoringStore {
-  readonly safeZones = signal<SafeZone[]>([
-    {
-      id: '1',
-      name: 'Casa de Elena',
-      address: 'Calle Santiago 42',
-      radiusMeters: 300,
-      isActive: true,
-      iconType: 'home',
-    },
-    {
-      id: '2',
-      name: 'Parque Castilla',
-      address: 'Paseo de la Castellana',
-      radiusMeters: 180,
-      isActive: true,
-      iconType: 'pin',
-    },
-  ]);
+  private db = inject(LocalDbService);
+
+  readonly safeZones = this.db.safeZones;
+  readonly isCreateModalOpen = signal(false);
 
   readonly routePoints = signal<RoutePoint[]>([
     { time: '09:02', placeName: 'Casa de Elena', status: 'Salida' },
-    { time: '09:18', placeName: 'Parque Castilla', status: 'Zona segura' },
-    { time: '09:44', placeName: 'Avenida Principal', status: 'En camino' },
+    { time: '09:18', placeName: 'Parque Kennedy', status: 'Zona segura' },
+    { time: '09:44', placeName: 'Av. José Pardo', status: 'En camino' },
     { time: '10:00', placeName: 'Casa de Elena', status: 'Llegada' },
   ]);
 
-  readonly isCreateModalOpen = signal(false);
-
   toggleZone(id: string): void {
-    this.safeZones.update((zones) =>
-      zones.map((z) => (z.id === id ? { ...z, isActive: !z.isActive } : z)),
-    );
+    this.db.toggleZoneState(id);
   }
 
-  addZone(zone: Omit<SafeZone, 'id' | 'isActive'>): void {
-    const newZone: SafeZone = {
-      ...zone,
-      id: Date.now().toString(),
-      isActive: true,
-    };
-    this.safeZones.update((zones) => [...zones, newZone]);
+  addZone(zoneDto: CreateSafeZoneDto): void {
+    this.db.saveZone(zoneDto);
     this.isCreateModalOpen.set(false);
   }
 }

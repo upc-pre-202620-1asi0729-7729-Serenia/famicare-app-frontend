@@ -31,6 +31,16 @@ declare const L: any;
       .map-large {
         height: 540px;
       }
+      :host ::ng-deep .famicare-zone-tooltip {
+        background: rgba(15, 41, 30, 0.85);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
     `,
   ],
 })
@@ -61,7 +71,7 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
     this.map = L.map(this.mapContainer.nativeElement, {
       zoomControl: false,
       attributionControl: false,
-    }).setView([lat, lng], 16);
+    }).setView([lat, lng], 15);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -80,14 +90,17 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
       iconAnchor: [18, 36],
     });
 
-    this.marker = L.marker([lat, lng], { icon: customIcon }).addTo(this.map);
+    this.marker = L.marker([lat, lng], { icon: customIcon })
+      .bindPopup('<b>Elena Martínez</b><br>Ubicación actual en tiempo real')
+      .addTo(this.map);
+
     this.renderZones(this.db.safeZones());
 
     setTimeout(() => {
       if (this.map) {
         this.map.invalidateSize();
       }
-    }, 250);
+    }, 300);
   }
 
   private renderZones(zones: any[]): void {
@@ -96,7 +109,7 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
     this.circleLayers = [];
 
     zones.forEach((z) => {
-      if (z.isActive) {
+      if (z.isActive && z.lat && z.lng) {
         const circle = L.circle([z.lat, z.lng], {
           color: '#39A86D',
           weight: 2,
@@ -104,6 +117,21 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
           fillOpacity: 0.18,
           radius: z.radiusMeters,
         }).addTo(this.map);
+
+        circle.bindTooltip(`<b>${z.name}</b> (${z.radiusMeters}m)`, {
+          permanent: false,
+          direction: 'top',
+          className: 'famicare-zone-tooltip',
+        });
+
+        circle.bindPopup(`
+          <div style="font-family: inherit; font-size: 13px;">
+            <strong style="color: #0F291E;">${z.name}</strong><br>
+            <span style="color: #666;">${z.address}</span><br>
+            <span style="color: #39A86D; font-weight: 600;">Radio: ${z.radiusMeters} metros</span>
+          </div>
+        `);
+
         this.circleLayers.push(circle);
       }
     });

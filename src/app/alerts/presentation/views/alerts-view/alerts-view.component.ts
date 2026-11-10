@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { AlertDetailModalComponent } from '../../components/alert-detail-modal/alert-detail-modal.component';
 import { AlertsStore } from '../../../application/alerts.store';
+import { I18nService } from '../../../../shared/services/i18n.service';
 
 @Component({
   selector: 'app-alerts-view',
@@ -12,17 +13,17 @@ import { AlertsStore } from '../../../application/alerts.store';
     <div class="content">
       <div class="page-heading inner">
         <div>
-          <p class="eyebrow">Centro de alertas</p>
-          <h1>Alertas y eventos</h1>
-          <p>Revisa y atiende eventos importantes</p>
+          <p class="eyebrow">{{ i18n.t('alerts.eyebrow') }}</p>
+          <h1>{{ i18n.t('alerts.title') }}</h1>
+          <p>{{ i18n.t('alerts.subtitle') }}</p>
         </div>
       </div>
 
       <section class="card data-card">
         <div class="filter-row">
-          @for (cat of categories; track cat) {
-            <button [class.active]="store.filter() === cat" (click)="store.filter.set(cat)">
-              {{ cat }}
+          @for (cat of categories; track cat.id) {
+            <button [class.active]="store.filter() === cat.id" (click)="store.filter.set(cat.id)">
+              {{ i18n.t(cat.key) }}
             </button>
           }
         </div>
@@ -37,11 +38,27 @@ import { AlertsStore } from '../../../application/alerts.store';
               <span>{{ alert.description }}</span>
               <small>{{ alert.timestamp }}</small>
             </div>
-            <span [class]="'status-pill ' + (alert.status === 'Pendiente' ? 'danger' : 'safe')">
-              {{ alert.status }}
+            <span
+              [class]="
+                'status-pill ' +
+                (alert.status === 'Pendiente'
+                  ? 'danger'
+                  : alert.status === 'Resuelta'
+                    ? 'safe'
+                    : 'warning')
+              "
+            >
+              {{
+                alert.status === 'Pendiente'
+                  ? i18n.t('alerts.status.pending')
+                  : alert.status === 'Resuelta'
+                    ? i18n.t('alerts.status.resolved')
+                    : i18n.t('alerts.status.attended')
+              }}
             </span>
             <button class="text-btn" (click)="store.selectedAlert.set(alert)">
-              Ver detalles <app-icon name="arrow" [size]="16"></app-icon>
+              {{ i18n.t('alerts.viewDetails') }}
+              <app-icon [name]="'arrow'" [size]="16"></app-icon>
             </button>
           </div>
         }
@@ -58,6 +75,14 @@ import { AlertsStore } from '../../../application/alerts.store';
   `,
 })
 export class AlertsViewComponent {
+  i18n = inject(I18nService);
   store = inject(AlertsStore);
-  categories = ['Todas', 'Emergencias SOS', 'Salida de zona', 'Batería baja', 'Inactividad'];
+
+  categories = [
+    { id: 'Todas', key: 'alerts.filter.all' },
+    { id: 'Emergencias SOS', key: 'alerts.filter.sos' },
+    { id: 'Salida de zona', key: 'alerts.filter.zone' },
+    { id: 'Batería baja', key: 'alerts.filter.battery' },
+    { id: 'Inactividad', key: 'alerts.filter.inactivity' },
+  ];
 }
