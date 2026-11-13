@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LocalDbService, CardData } from '../../../../core/infrastructure/local-db.service';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
+import { SubscriptionsService, PaymentMethodPayload } from '../../../application/subscriptions.service';
 
 @Component({
   selector: 'app-subscription-modal',
@@ -40,7 +41,7 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
           <p class="modal-sub">
             Se cambiará tu suscripción a <strong>{{ selectedPlan }}</strong> por
             <strong>PEN {{ selectedPrice }} / mes</strong> usando tu tarjeta guardada terminada en
-            •••• {{ db.currentUser()?.subscription?.savedCard?.cardNumber?.slice(-4) }}.
+            •••• {{ subService.subscription().savedCard?.cardNumber?.slice(-4) }}.
           </p>
           <div class="btn-row">
             <button class="primary-btn full-btn" (click)="applyUpgradeWithExistingCard()">
@@ -207,7 +208,7 @@ export class SubscriptionModalComponent implements OnInit {
   @Input() mode: 'upgrade' | 'update-card' = 'upgrade';
   @Output() close = new EventEmitter<void>();
 
-  db = inject(LocalDbService);
+  subService = inject(SubscriptionsService);
   step = signal<'select' | 'confirm-saved' | 'checkout' | 'success'>('select');
 
   selectedPlan: 'Familiar Plus' | 'Familiar Premium' = 'Familiar Premium';
@@ -230,9 +231,7 @@ export class SubscriptionModalComponent implements OnInit {
   pickPlan(plan: 'Familiar Plus' | 'Familiar Premium', price: number): void {
     this.selectedPlan = plan;
     this.selectedPrice = price;
-
-    const user = this.db.currentUser();
-    if (user?.subscription.savedCard) {
+    if (this.subService.subscription().savedCard) {
       this.step.set('confirm-saved');
     } else {
       this.step.set('checkout');
@@ -240,51 +239,42 @@ export class SubscriptionModalComponent implements OnInit {
   }
 
   applyUpgradeWithExistingCard(): void {
-    const user = this.db.currentUser();
-    const renewal = new Date();
-    renewal.setMonth(renewal.getMonth() + 1);
-
-    this.db.updateSubscription({
-      planType: this.selectedPlan,
-      priceMonthly: this.selectedPrice,
-      currency: 'PEN',
-      renewalDate: renewal.toISOString(),
-      isCancelled: false,
-      savedCard: user?.subscription.savedCard,
+    const dummyCard = this.buildPaymentPayload(
+      this.subService.subscription().savedCard?.cardNumber ?? '4111111111114321',
+      this.subService.subscription().savedCard?.expDate ?? '08/28',
+    );
+    this.subService.savePlanAndCard(this.selectedPlan, dummyCard).subscribe(() => {
+      this.finishAndClose();
     });
-
-    this.finishAndReload();
   }
 
   submitCard(): void {
-    const renewal = new Date();
-    renewal.setMonth(renewal.getMonth() + 1);
-
-    const user = this.db.currentUser();
-    const planToSave =
+    const payment = this.buildPaymentPayload(this.card.cardNumber, this.card.expDate);
+    const obs$ =
       this.mode === 'update-card'
-        ? user?.subscription.planType || 'Familiar Premium'
-        : this.selectedPlan;
+        ? this.subService.updateCardOnly(payment)
+        : this.subService.savePlanAndCard(this.selectedPlan, payment);
 
-    const priceToSave =
-      this.mode === 'update-card' ? user?.subscription.priceMonthly || 29.99 : this.selectedPrice;
-
-    this.db.updateSubscription({
-      planType: planToSave as any,
-      priceMonthly: priceToSave,
-      currency: 'PEN',
-      renewalDate: renewal.toISOString(),
-      isCancelled: false,
-      savedCard: { ...this.card },
-    });
-
-    this.finishAndReload();
+    obs$.subscribe(() => this.finishAndClose());
   }
 
-  private finishAndReload(): void {
+  private buildPaymentPayload(cardNumber: string, expDate: string): PaymentMethodPayload {
+    const [mmStr, yyStr] = expDate.split('/');
+    const month = Math.min(12, Math.max(1, Number(mmStr) || 12));
+    const year = 2000 + (Number(yyStr) || 28);
+    const cleanNum = cardNumber.replace(/\D/g, '');
+
+    return {
+      token: `tok_${Date.now()}`,
+      brand: cleanNum.startsWith('5') ? 'MASTERCARD' : 'VISA',
+      lastFour: cleanNum.slice(-4).padStart(4, '0'),
+      expirationMonth: month,
+      expirationYear: year,
+    };
+  }
+
+  private finishAndClose(): void {
     this.step.set('success');
-    setTimeout(() => {
-      window.location.reload();
-    }, 1800);
+    setTimeout(() => this.close.emit(), 1200);
   }
 }

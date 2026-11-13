@@ -1,12 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { I18nService } from '../../../../shared/services/i18n.service';
+import { SubscriptionsService } from '../../../application/subscriptions.service';
+import { SubscriptionModalComponent } from '../../components/subscription-modal/subscription-modal.component';
 
 @Component({
   selector: 'app-account-view',
   standalone: true,
-  imports: [CommonModule, IconComponent],
+  imports: [CommonModule, IconComponent, SubscriptionModalComponent],
   template: `
     <div class="content">
       <div class="page-heading inner">
@@ -41,29 +43,62 @@ import { I18nService } from '../../../../shared/services/i18n.service';
         </section>
 
         <section class="card plan-card">
-          <span class="status-pill safe">{{ i18n.t('account.activePlanBadge') }}</span>
-          <h2>Familiar Premium</h2>
+          <span class="status-pill safe">
+            {{
+              subService.subscription().isCancelled
+                ? 'Cancelado'
+                : i18n.t('account.activePlanBadge')
+            }}
+          </span>
+          <h2>{{ subService.subscription().planType }}</h2>
           <p>{{ i18n.t('account.planFeatures') }}</p>
-          <strong class="price"
-            >S/ 29,90<small>{{ i18n.t('account.perMonth') }}</small></strong
-          >
+          <strong class="price">
+            S/ {{ subService.subscription().priceMonthly | number: '1.2-2' }}
+            <small>{{ i18n.t('account.perMonth') }}</small>
+          </strong>
           <div class="renew">
             <app-icon name="check"></app-icon> {{ i18n.t('account.renewalDate') }}
           </div>
-          <div class="payment">
-            <span>VISA</span>
-            <div>
-              <strong>•••• 4321</strong><small>{{ i18n.t('account.cardExpiry') }}</small>
+          @if (subService.subscription().savedCard; as card) {
+            <div class="payment">
+              <span>VISA</span>
+              <div>
+                <strong>•••• {{ card.cardNumber.slice(-4) }}</strong>
+                <small>Vence {{ card.expDate }}</small>
+              </div>
+              <button class="text-btn" (click)="openModal('update-card')">
+                {{ i18n.t('account.updateCard') }}
+              </button>
             </div>
-            <button class="text-btn">{{ i18n.t('account.updateCard') }}</button>
-          </div>
-          <button class="primary-btn">{{ i18n.t('account.changePlan') }}</button>
-          <button class="link-danger">{{ i18n.t('account.cancelSub') }}</button>
+          }
+          <button class="primary-btn" (click)="openModal('upgrade')">
+            {{ i18n.t('account.changePlan') }}
+          </button>
+          @if (!subService.subscription().isCancelled && subService.subscriptionId()) {
+            <button class="link-danger" (click)="subService.cancelSubscription()">
+              {{ i18n.t('account.cancelSub') }}
+            </button>
+          }
         </section>
       </div>
     </div>
+
+    @if (modalOpen()) {
+      <app-subscription-modal
+        [mode]="modalMode()"
+        (close)="modalOpen.set(false)"
+      ></app-subscription-modal>
+    }
   `,
 })
 export class AccountViewComponent {
   i18n = inject(I18nService);
+  subService = inject(SubscriptionsService);
+  modalOpen = signal(false);
+  modalMode = signal<'upgrade' | 'update-card'>('upgrade');
+
+  openModal(mode: 'upgrade' | 'update-card'): void {
+    this.modalMode.set(mode);
+    this.modalOpen.set(true);
+  }
 }
