@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
@@ -17,7 +17,21 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
         <h2>Invitar cuidador</h2>
         <p class="modal-sub">Añade a alguien de confianza al cuidado de Elena</p>
 
+        @if (errorMessage) {
+          <div class="auth-error">{{ errorMessage }}</div>
+        }
+
         <form class="form" (ngSubmit)="send()">
+          <label>
+            Nombre completo
+            <input
+              type="text"
+              [(ngModel)]="fullName"
+              name="fullName"
+              placeholder="Ej. Lucía Santos"
+              required
+            />
+          </label>
           <label>
             Correo electrónico
             <input
@@ -34,15 +48,15 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
               type="text"
               [(ngModel)]="relationship"
               name="relationship"
-              placeholder="Ej. Hermano, Enfermero"
+              placeholder="Ej. Hermano, Enfermera"
               required
             />
           </label>
           <label>
             Nivel de permisos
             <select [(ngModel)]="role" name="role">
-              <option value="Alertas y lectura">Colaborador · Alertas y lectura</option>
-              <option value="Control total">Administrador · Control total</option>
+              <option value="Alertas y lectura">Colaborador - Alertas y lectura</option>
+              <option value="Control total">Administrador - Control total</option>
             </select>
           </label>
           <button type="submit" class="primary-btn">Enviar invitación</button>
@@ -50,18 +64,38 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
       </div>
     </div>
   `,
+  styles: [
+    `
+      .auth-error {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 11px;
+        margin-bottom: 12px;
+      }
+    `,
+  ],
 })
 export class InviteCaregiverModalComponent {
+  @Input() errorMessage: string | null = null;
   @Output() close = new EventEmitter<void>();
-  @Output() invited = new EventEmitter<{ email: string; relationship: string; role: string }>();
+  @Output() invited = new EventEmitter<{
+    fullName: string;
+    email: string;
+    relationship: string;
+    role: string;
+  }>();
 
+  fullName = '';
   email = '';
   relationship = '';
   role = 'Alertas y lectura';
 
   send(): void {
-    if (this.email.trim() && this.relationship.trim()) {
+    if (this.fullName.trim() && this.email.trim() && this.relationship.trim()) {
       this.invited.emit({
+        fullName: this.fullName,
         email: this.email,
         relationship: this.relationship,
         role: this.role,
