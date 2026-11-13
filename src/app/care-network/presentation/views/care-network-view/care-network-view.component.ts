@@ -16,13 +16,13 @@ import { I18nService } from '../../../../shared/services/i18n.service';
           <h1>{{ i18n.t('network.title') }}</h1>
           <p>{{ store.caregivers().length }} {{ i18n.t('network.activeCaregivers') }}</p>
         </div>
-        <button class="primary-btn" (click)="store.isInviteModalOpen.set(true)">
+        <button class="primary-btn" (click)="openInviteModal()">
           {{ i18n.t('network.inviteBtn') }}
         </button>
       </div>
 
       <div class="people-grid">
-        @for (c of store.caregivers(); track c.name; let i = $index) {
+        @for (c of store.caregivers(); track c.id ?? c.name; let i = $index) {
           <section class="card person-card">
             <div [class]="'avatar big av' + (i % 3)">{{ c.initials }}</div>
             <span class="availability"><i></i>{{ c.availability }}</span>
@@ -31,7 +31,21 @@ import { I18nService } from '../../../../shared/services/i18n.service';
             <hr />
             <small>{{ i18n.t('network.availability') }}</small>
             <strong>{{ c.schedule }}</strong>
-            <button class="wide-secondary">{{ i18n.t('network.managePermissions') }}</button>
+
+            @if (c.id && c.status === 'PENDING') {
+              <button class="primary-btn" (click)="store.acceptInvitation(c.id)">
+                Aceptar invitación
+              </button>
+            }
+            @if (c.id && c.roleType !== 'ADMINISTRATOR') {
+              <button class="wide-secondary" (click)="store.revokeAccess(c.id)">
+                Quitar acceso
+              </button>
+            } @else {
+              <button class="wide-secondary" disabled>
+                {{ i18n.t('network.managePermissions') }}
+              </button>
+            }
           </section>
         }
       </div>
@@ -39,6 +53,7 @@ import { I18nService } from '../../../../shared/services/i18n.service';
 
     @if (store.isInviteModalOpen()) {
       <app-invite-caregiver-modal
+        [errorMessage]="store.errorMessage()"
         (close)="store.isInviteModalOpen.set(false)"
         (invited)="store.invite($event)"
       >
@@ -49,4 +64,9 @@ import { I18nService } from '../../../../shared/services/i18n.service';
 export class CareNetworkViewComponent {
   i18n = inject(I18nService);
   store = inject(CareNetworkStore);
+
+  openInviteModal(): void {
+    this.store.errorMessage.set(null);
+    this.store.isInviteModalOpen.set(true);
+  }
 }
