@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LocalDbService } from '../../../../core/infrastructure/local-db.service';
+import { DevicesService } from '../../../application/devices.service';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 
 @Component({
@@ -18,7 +18,7 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
         @if (!isSuccess()) {
           <p class="eyebrow">NUEVO DISPOSITIVO</p>
           <h2>Vincular dispositivo</h2>
-          <p class="modal-sub">Conecta una pulsera FamiCare a este perfil</p>
+          <p class="modal-sub">Conecta una pulsera de FamiCare a este perfil</p>
 
           @if (errorMessage()) {
             <div class="auth-error">{{ errorMessage() }}</div>
@@ -122,24 +122,30 @@ import { IconComponent } from '../../../../shared/presentation/components/icon/i
 export class LinkDeviceModalComponent {
   @Output() close = new EventEmitter<void>();
 
-  private db = inject(LocalDbService);
+  private devicesService = inject(DevicesService);
   code = '';
   errorMessage = signal('');
   isSuccess = signal(false);
 
   submitCode(): void {
-    const clean = this.code.trim();
-    if (!/^\d{6}$/.test(clean)) {
-      this.errorMessage.set('El código debe ser de exactamente 6 dígitos numéricos.');
+    const clean = this.code.trim().toUpperCase();
+    if (!/^[A-Za-z0-9-]{4,32}$/.test(clean)) {
+      this.errorMessage.set('Ingresa codigo valido.');
       return;
     }
 
-    if (this.db.VALID_NUMERIC_CODES.includes(clean)) {
-      this.db.addDeviceToCurrentUser(clean);
-      this.errorMessage.set('');
-      this.isSuccess.set(true);
-    } else {
-      this.errorMessage.set('Código inválido. Prueba uno válido como 204800 o 100100.');
-    }
+    this.devicesService.pairDevice(clean).subscribe({
+      next: () => {
+        this.errorMessage.set('');
+        this.isSuccess.set(true);
+      },
+      error: (err) => {
+        this.errorMessage.set(
+          err.status === 409
+            ? 'Este dispositivo ya esta vinculado.'
+            : 'No se pudo vincular el dispositivo.',
+        );
+      },
+    });
   }
 }

@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LocalDbService } from '../../../../core/infrastructure/local-db.service';
+import { DevicesService } from '../../../application/devices.service';
 import { IconComponent } from '../../../../shared/presentation/components/icon/icon.component';
 import { LinkDeviceModalComponent } from '../../components/link-device-modal/link-device-modal.component';
 import { I18nService } from '../../../../shared/services/i18n.service';
@@ -100,7 +100,7 @@ import { I18nService } from '../../../../shared/services/i18n.service';
 })
 export class DevicesViewComponent {
   i18n = inject(I18nService);
-  private db = inject(LocalDbService);
-  readonly device = this.db.currentDevice;
+  private devicesService = inject(DevicesService);
+  readonly device = this.devicesService.currentDevice;
   isModalOpen = signal(false);
 }
